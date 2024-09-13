@@ -8,7 +8,8 @@ const User = require("./models/user")
 const { checkForAuthenticationCookie } = require("./middleware/authentication");
 const blogRoute = require('./route/blog')
 const app = express();
-const port = 3000;
+require('dotenv').config();
+const port =  process.env.PORT || 3000;
 const Blog = require('./models/blog')
 app.use(express.urlencoded({extended:false}))
 // app.use(express.urlencoded({ extended: true }));
@@ -16,7 +17,30 @@ app.use(express.json());
 app.use(cookieParser())
 app.use(checkForAuthenticationCookie("token"))
 app.use(express.static((path.resolve('./public'))))
-mongoose.connect('mongodb://localhost:27017/Blogtech').then(()=> console.log("mongo connect"))
+
+
+
+// const mongoURL = process.env.MongoDB_LOCALURL;
+const mongoURL = process.env.MongoDB_URL;
+
+mongoose.connect(mongoURL, {
+   useNewUrlParser: true,
+   useUnifiedTopology: true
+});
+
+const db = mongoose.connection;
+
+db.on('connected', () => {  // Corrected here
+   console.log("Connected to MongoDB server");
+});
+
+db.on('error', (err) => {
+   console.error("Error connecting to MongoDB:", err);
+});
+
+// mongoose.connect('mongodb://localhost:27017/Blogtech').then(()=> console.log("mongo connect"))
+// mongoose.connect('mongodb://localhost:27017/Blogtech').then(()=> console.log("mongo connect"))
+
 app.set("view engine", 'ejs')
 app.set('views' , path.resolve('./views') )
 app.get('/' , async(req,res)=>{
